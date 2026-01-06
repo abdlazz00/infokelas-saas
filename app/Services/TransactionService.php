@@ -1,6 +1,8 @@
 <?php
 namespace App\Services;
 
+use App\Jobs\SendWhatsappPaymentRejected;
+use App\Jobs\SendWhatsappPaymentSuccess;
 use App\Models\Package;
 use App\Models\Transaction;
 use App\Models\Classroom;
@@ -79,6 +81,8 @@ class TransactionService
                 'expired_at' => $newExpired,
             ]);
 
+            SendWhatsappPaymentSuccess::dispatch($transaction);
+
             return $transaction;
         });
     }
@@ -93,6 +97,9 @@ class TransactionService
             'status' => 'rejected',
             'admin_note' =>$reason ?? 'Ditolak oleh System.',
         ]);
+
+        SendWhatsappPaymentRejected::dispatch($transaction);
+
         return $transaction;
     }
 }

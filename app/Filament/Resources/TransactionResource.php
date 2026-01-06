@@ -16,8 +16,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\HtmlString; // Import HtmlString for Popup
-use Illuminate\Support\Facades\Storage; // Import Storage
+use Illuminate\Support\HtmlString;
+use Illuminate\Support\Facades\Storage;
 
 class TransactionResource extends Resource
 {
@@ -143,6 +143,7 @@ class TransactionResource extends Resource
             ])->columns(3);
     }
 
+    // LOGIC HITUNG TOTAL
     public static function updateTotals(Get $get, Set $set): void
     {
         $service = new TransactionService();
@@ -183,7 +184,7 @@ class TransactionResource extends Resource
                     ->badge()
                     ->color('primary'),
 
-                // KOLOM BUKTI PEMBAYARAN (KLIK UNTUK POPUP)
+                // KOLOM BUKTI PEMBAYARAN (POPUP)
                 Tables\Columns\ImageColumn::make('proof_of_payment')
                     ->label('Bukti')
                     ->visibility('public')
@@ -216,9 +217,7 @@ class TransactionResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([
-                // BUTTON EDIT DIHAPUS (Sesuai Request)
-
-                // APPROVE
+                // ACTION APPROVE
                 Tables\Actions\Action::make('approve_payment')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
@@ -239,7 +238,7 @@ class TransactionResource extends Resource
                         $record->status === 'pending' && auth()->user()->role === 'super_admin'
                     ),
 
-                // REJECT
+                // ACTION REJECT
                 Tables\Actions\Action::make('reject_payment')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
