@@ -60,7 +60,9 @@ class User extends Authenticatable implements FilamentUser
     public function classrooms(): BelongsToMany
     {
         return $this->belongsToMany(Classroom::class, 'class_students', 'student_id', 'classroom_id')
-            ->withPivot('joined_at');
+            ->using(ClassStudent::class) // <--- TAMBAHKAN INI
+            ->withPivot('joined_at')
+            ->withTimestamps();
     }
     public function hasRole($role): bool
     {

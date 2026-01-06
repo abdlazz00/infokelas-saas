@@ -29,7 +29,7 @@ class AuthService
 
         // 4. Validasi Status Aktif
         if (! $user->is_active) {
-            throw new Exception("Akun Anda dinonaktifkan. Silakan hubungi Admin.", 403);
+            throw new Exception("Akun Anda telah diarsipkan. Silakan hubungi Admin Kelas.", 403);
         }
 
         // 5. Generate Token

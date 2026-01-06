@@ -38,7 +38,9 @@ class Classroom extends Model
     public function students(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'class_students', 'classroom_id', 'student_id')
-            ->withPivot('joined_at');
+            ->using(ClassStudent::class)
+            ->withPivot('joined_at')
+            ->withTimestamps();
     }
 
     // --- RELASI AKADEMIK ---
