@@ -12,25 +12,32 @@ class FonnteService
      */
     public function sendMessage($target, $message)
     {
-        $token = env('FONNTE_TOKEN');
+        // ✅ UPDATE: Ambil Token dari Config (Best Practice)
+        // Ini akan membaca dari config/services.php -> array fonnte -> key token
+        $token = config('services.fonnte.token');
+
         if (empty($token)) {
-            Log::error('Fonnte Token belum disetting di .env');
+            // Ubah pesan log agar lebih akurat
+            Log::error('Fonnte Token kosong. Cek config/services.php atau .env Anda.');
             return false;
         }
 
-        // PERBAIKAN: Format nomor hanya jika BUKAN Group ID
-        // Group ID memiliki karakter '@', jadi kita cek dulu
+        // Format nomor hanya jika BUKAN Group ID
         if (!str_contains($target, '@')) {
             $target = $this->formatPhoneNumber($target);
         }
 
         try {
+            // ✅ UPDATE: Ambil Endpoint dari Config
+            // Jika tidak ada di config, default ke 'https://api.fonnte.com/send'
+            $endpoint = config('services.fonnte.endpoint', 'https://api.fonnte.com/send');
+
             $response = Http::withHeaders([
                 'Authorization' => $token,
-            ])->post(env('FONNTE_ENDPOINT'), [
+            ])->post($endpoint, [
                 'target' => $target,
                 'message' => $message,
-                'countryCode' => '62',
+                'countryCode' => '62', // Opsional jika nomor lokal tidak pakai 62
             ]);
 
             // Log Response Fonnte untuk debugging
@@ -50,7 +57,6 @@ class FonnteService
 
     /**
      * Helper: Format Nomor HP jadi format internasional (62xxx)
-     * Hanya digunakan untuk nomor HP personal, bukan Group.
      */
     private function formatPhoneNumber($number)
     {
@@ -73,7 +79,8 @@ class FonnteService
      */
     public function fetchGroups()
     {
-        $token = env('FONNTE_TOKEN');
+        // ✅ UPDATE: Gunakan config di sini juga
+        $token = config('services.fonnte.token');
 
         try {
             $response = Http::withHeaders([

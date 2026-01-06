@@ -13,55 +13,62 @@ return new class extends Migration
     {
         // 1. Tabel Mata Kuliah (Master Data per Kelas)
         Schema::create('subjects', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('classroom_id')->constrained('classrooms')->cascadeOnDelete();
-            $table->string('name'); // Algoritma
-            $table->string('lecturer'); // Bu Susi
+            $table->ulid('id')->primary();
+            $table->foreignUlid('classroom_id')->constrained('classrooms')->cascadeOnDelete();
+            $table->string('name');
+            $table->string('code')->nullable();
+            $table->string('lecturer');
+            $table->integer('semester')->default(1);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
 
         // 2. Tabel Jadwal
         Schema::create('schedules', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('classroom_id')->constrained('classrooms')->cascadeOnDelete();
-            $table->foreignId('subject_id')->constrained('subjects')->cascadeOnDelete(); // Relasi ke Subject
-            $table->integer('day_of_week'); // 1=Senin, 7=Minggu
+            $table->ulid('id')->primary();
+            $table->foreignUlid('classroom_id')->constrained('classrooms')->cascadeOnDelete();
+            $table->foreignUlid('subject_id')->constrained('subjects')->cascadeOnDelete();
+            $table->integer('day_of_week');
             $table->time('start_time');
             $table->time('end_time');
-            $table->string('room')->nullable(); // Opsional
+            $table->string('room')->nullable();
             $table->timestamps();
         });
 
         // 3. Tabel Materi
         Schema::create('materials', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('classroom_id')->constrained('classrooms')->cascadeOnDelete();
-            $table->foreignId('subject_id')->nullable()->constrained('subjects')->nullOnDelete(); // Opsional link ke matkul
+            $table->ulid('id')->primary();
+            $table->foreignUlid('classroom_id')->constrained('classrooms')->cascadeOnDelete();
+            $table->foreignUlid('subject_id')->nullable()->constrained('subjects')->nullOnDelete();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('file_path')->nullable(); // PDF/PPT
-            $table->string('link_url')->nullable(); // Gdrive/Youtube
+            $table->string('file_path')->nullable();
+            $table->string('link_url')->nullable();
+            $table->string('wa_group_id')->nullable();
+
             $table->timestamps();
         });
 
         // 4. Tabel Tugas
         Schema::create('assignments', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('classroom_id')->constrained('classrooms')->cascadeOnDelete();
-            $table->foreignId('subject_id')->nullable()->constrained('subjects')->nullOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('classroom_id')->constrained('classrooms')->cascadeOnDelete();
+            $table->foreignUlid('subject_id')->nullable()->constrained('subjects')->nullOnDelete();
             $table->string('title');
             $table->text('description')->nullable();
+            $table->string('file_url')->nullable();
             $table->dateTime('deadline');
             $table->boolean('is_active')->default(true);
+            $table->string('wa_group_id')->nullable();
             $table->timestamps();
         });
 
         // 5. Tabel WA Group
         Schema::create('wa_groups', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('classroom_id')->constrained('classrooms')->cascadeOnDelete();
-            $table->string('name'); // Inputan Dosen
-            $table->string('jid')->nullable(); // Inputan Super Admin
+            $table->ulid('id')->primary();
+            $table->foreignUlid('classroom_id')->constrained('classrooms')->cascadeOnDelete();
+            $table->string('name');
+            $table->string('jid')->nullable();
             $table->timestamps();
         });
     }

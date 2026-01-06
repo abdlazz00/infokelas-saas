@@ -15,48 +15,41 @@ class SendWhatsappMaterial implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $material;
+    public function __construct(
+        public Material $material
+    ) {}
 
-    /**
-     * Terima data material saat Job dibuat
-     */
-    public function __construct(Material $material)
+    public function handle(FonnteService $fonnteService): void
     {
-        $this->material = $material;
-    }
-
-    /**
-     * Eksekusi Job (Jalan di Background)
-     */
-    public function handle(): void
-    {
+        // Load Relasi
+        $this->material->loadMissing(['classroom', 'classroom.wa_group', 'subject']);
         $record = $this->material;
-        $fonnte = new FonnteService();
+        $classroom = $record->classroom;
 
-        $frontendUrl = env('FRONTEND_URL');
+        // Cek Target
+        $target = $classroom->wa_group?->jid;
 
-        $directLink = "{$frontendUrl}/class/{$record->classroom_id}";
-
-        $emoji = '📚';
-
-        // 2. SUSUN PESAN
-        $message = "*{$emoji} MATERI BARU DIUPLOAD {$emoji}*\n"
-            . "-----------------------------\n\n"
-            . "*Mata Kuliah:*\n"
-            . "{$record->subject->name}\n\n"
-            . "*Judul Materi:*\n"
-            . "{$record->title}\n\n"
-            . "*Link Akses Cepat:* \n"
-            . "🔗 {$directLink}\n\n"
-            . "-----------------------------\n"
-            . "Silakan buka aplikasi untuk mengunduh file atau menonton video materi.";
-
-        // 3. KIRIM PESAN
-        if ($record->wa_group_id) {
-            $fonnte->sendMessage($record->wa_group_id, $message);
-            Log::info("WA Materi terkirim ke Group ID: {$record->wa_group_id}");
-        } else {
-            Log::warning("WA Materi batal: Tidak ada Group ID yang dipilih.");
+        if (!$target) {
+            Log::info("Job Skipped: Kelas {$classroom->name} belum punya WA Group.");
+            return;
         }
+
+        // Link Akses
+        $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+        // Arahkan ke halaman subject detail
+        $directLink = "{$frontendUrl}/class/{$record->classroom_id}/subject/{$record->subject_id}";
+
+        // Format Pesan (Tanpa Emoji)
+        $message = "*MATERI BARU DIUPLOAD*\n"
+            . "---------------------------\n"
+            . "*Mata Kuliah:* {$record->subject->name}\n"
+            . "*Judul Materi:* {$record->title}\n\n"
+            . "*Link Akses:*\n"
+            . "{$directLink}\n\n"
+            . "---------------------------\n"
+            . "Silakan login aplikasi untuk mengunduh file atau materi.";
+
+        // Kirim
+        $fonnteService->sendMessage($target, $message);
     }
 }

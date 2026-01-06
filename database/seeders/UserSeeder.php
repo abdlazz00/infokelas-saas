@@ -14,15 +14,13 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Buat Super Admin
         User::create([
             'name' => 'Super Admin',
             'email' => 'admin@admin.com',
-            'password' => Hash::make('123'), // Password default
+            'password' => Hash::make('123'),
             'role' => 'super_admin',
         ]);
 
-        // 2. Buat Dummy Dosen (Untuk Test)
         User::create([
             'name' => 'Admin kelas',
             'email' => 'adminkelas@admin.com',
@@ -31,7 +29,6 @@ class UserSeeder extends Seeder
             'phone' => '08123456789',
         ]);
 
-        // 3. Buat Dummy Mahasiswa
         User::create([
             'name' => 'Andi',
             'email' => 'andi@gmail.com',

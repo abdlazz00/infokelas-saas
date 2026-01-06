@@ -17,15 +17,10 @@ class StudentsRelationManager extends RelationManager
 
     protected static ?string $title = 'Daftar Mahasiswa';
 
-    // === LOGIC PENGAMANAN ===
-    // Jika Kelas INACTIVE/EXPIRED, maka relation ini jadi Read-Only.
-    // Tombol Create, Edit, Delete otomatis hilang.
     public function isReadOnly(): bool
     {
-        // Ambil data kelas induk (Parent Record)
         $classroom = $this->getOwnerRecord();
 
-        // Return true (Read Only) jika status TIDAK active
         return $classroom->subscription_status !== 'active';
     }
     // ========================
@@ -82,6 +77,12 @@ class StudentsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('email')
                     ->icon('heroicon-m-envelope')
                     ->copyable(),
+
+                Tables\Columns\ToggleColumn::make('is_active')
+                    ->label('Status Aktif')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->tooltip('Matikan untuk mengarsipkan mahasiswa (tidak bisa login)'),
 
                 Tables\Columns\TextColumn::make('pivot.joined_at')
                     ->label('Bergabung')

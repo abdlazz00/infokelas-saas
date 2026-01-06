@@ -12,12 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('announcements', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignUlid('classroom_id')->constrained('classrooms')->cascadeOnDelete();
             $table->string('title');
             $table->text('content')->nullable();
             $table->string('type')->default('info');
             $table->string('image')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->string('wa_group_id')->nullable();
             $table->timestamps();
         });
     }

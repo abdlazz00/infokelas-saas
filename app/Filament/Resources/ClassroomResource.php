@@ -135,7 +135,7 @@ class ClassroomResource extends Resource
                     ->weight('bold'),
 
                 Tables\Columns\TextColumn::make('teacher.name')
-                    ->label('Dosen')
+                    ->label('Admin Kelas')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('code')

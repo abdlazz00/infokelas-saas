@@ -12,7 +12,7 @@ class ExpiringClassesWidget extends BaseWidget
 {
     protected static ?string $heading = 'Monitoring Masa Aktif Kelas';
     protected static ?int $sort = 3;
-//    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = 'full';
 
     public static function canView(): bool
     {

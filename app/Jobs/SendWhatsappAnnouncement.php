@@ -15,58 +15,48 @@ class SendWhatsappAnnouncement implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $announcement;
+    public function __construct(
+        public Announcement $announcement
+    ) {}
 
-    /**
-     * Terima data announcement saat Job dibuat
-     */
-    public function __construct(Announcement $announcement)
+    public function handle(FonnteService $fonnteService): void
     {
-        $this->announcement = $announcement;
-    }
-
-    /**
-     * Eksekusi Job (Jalan di Background)
-     */
-    public function handle(): void
-    {
+        // 1. Load Relasi
+        $this->announcement->loadMissing(['classroom', 'classroom.wa_group', 'author']);
         $record = $this->announcement;
+        $classroom = $record->classroom;
 
-        Log::info("Job Queue Berjalan: Mengirim WA untuk Pengumuman ID: {$record->id}");
+        // 2. Cek Target (Group WA)
+        $target = $classroom->wa_group?->jid;
 
-        $fonnte = new FonnteService();
+        if (!$target) {
+            Log::info("Job Skipped: Kelas {$classroom->name} belum punya WA Group.");
+            return;
+        }
 
-        // 1. Logika Emoji untuk SEMUA tipe
-        $emoji = match ($record->type) {
-            'danger' => '🚨',   // Merah/Darurat
-            'warning' => '⚠️',  // Kuning/Penting
-            'info' => 'ℹ️',     // Biru/Informasi
-            default => '📢',
-        };
-
-        // 2. Format Header Label
+        // 3. Format Header Label (Tanpa Emoji)
         $label = match ($record->type) {
-            'danger' => 'DARURAT',
-            'warning' => 'PENTING',
+            'danger' => 'PENTING / DARURAT',
+            'warning' => 'PERHATIAN',
             'info' => 'INFORMASI',
             default => 'PENGUMUMAN',
         };
 
-        // 3. Susun Pesan
-        $message = "*{$emoji} {$label} {$emoji}*\n\n"
-            . "*{$record->title}*\n\n"
-            . "{$record->content}\n\n"
-            . "-----------------------------\n"
-            . "Diterbitkan oleh: {$record->author->name}\n"
-            . "Tanggal: " . $record->created_at->format('d M Y H:i');
+        // 4. Susun Pesan
+        $content = strip_tags($record->content); // Bersihkan HTML tags
+        $author = $record->author->name ?? 'Dosen';
+        $date = $record->created_at->format('d M Y H:i');
 
-        // 4. Kirim ke Fonnte
-        // (Pastikan wa_group_id ada isinya sebelum kirim)
-        if ($record->wa_group_id) {
-            $fonnte->sendMessage($record->wa_group_id, $message);
-            Log::info("Job Queue Selesai: Pesan terkirim ke {$record->wa_group_id}");
-        } else {
-            Log::warning("Job Queue Skipped: Tidak ada Group ID");
-        }
+        $message = "*[{$label}]*\n"
+            . "---------------------------\n"
+            . "*{$record->title}*\n\n"
+            . "{$content}\n\n"
+            . "---------------------------\n"
+            . "Kelas: {$classroom->name}\n"
+            . "Oleh: {$author}\n"
+            . "Waktu: {$date}";
+
+        // 5. Kirim ke Group
+        $fonnteService->sendMessage($target, $message);
     }
 }

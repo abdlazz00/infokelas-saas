@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,7 +15,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements FilamentUser
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasUlids;
 
     protected $guarded = ['id'];
 
@@ -59,7 +60,9 @@ class User extends Authenticatable implements FilamentUser
     public function classrooms(): BelongsToMany
     {
         return $this->belongsToMany(Classroom::class, 'class_students', 'student_id', 'classroom_id')
-            ->withPivot('joined_at');
+            ->using(ClassStudent::class) // <--- TAMBAHKAN INI
+            ->withPivot('joined_at')
+            ->withTimestamps();
     }
     public function hasRole($role): bool
     {
