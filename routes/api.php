@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AnnouncementController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,8 @@ use App\Http\Controllers\Api\AssignmentController;
 
 // --- PUBLIC ROUTES ---
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOtp']);
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
 
 // --- PROTECTED ROUTES (Butuh Token) ---
 Route::middleware('auth:sanctum')->group(function () {
