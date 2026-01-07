@@ -21,13 +21,11 @@ class SendWhatsappAnnouncement implements ShouldQueue
 
     public function handle(FonnteService $fonnteService): void
     {
-        // 1. Load Relasi
-        $this->announcement->loadMissing(['classroom', 'waGroup', 'author']);
+        $this->announcement->loadMissing(['classroom', 'waGroup', 'user']);
 
         $record = $this->announcement;
         $classroom = $record->classroom;
 
-        // 2. Cek Target (Langsung dari relasi waGroup di announcement)
         $target = $record->waGroup?->jid;
 
         if (!$target) {
@@ -35,7 +33,7 @@ class SendWhatsappAnnouncement implements ShouldQueue
             return;
         }
 
-        // 3. Format Header Label (Tanpa Emoji)
+        // 3. Format Header Label
         $label = match ($record->type) {
             'danger' => 'PENTING / DARURAT',
             'warning' => 'PERHATIAN',
@@ -44,8 +42,10 @@ class SendWhatsappAnnouncement implements ShouldQueue
         };
 
         // 4. Susun Pesan
-        $content = strip_tags($record->content); // Bersihkan HTML tags
-        $author = $record->author->name ?? 'Dosen';
+        $content = strip_tags($record->content);
+
+        $author = $record->user->name ?? 'Dosen';
+
         $date = $record->created_at->format('d M Y H:i');
 
         $message = "*[{$label}]*\n"
@@ -57,7 +57,7 @@ class SendWhatsappAnnouncement implements ShouldQueue
             . "Oleh: {$author}\n"
             . "Waktu: {$date}";
 
-        // 5. Kirim ke Group
+        // 5. Kirim
         $fonnteService->sendMessage($target, $message);
     }
 }
