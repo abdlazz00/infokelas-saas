@@ -172,7 +172,7 @@ class AnnouncementResource extends Resource
                     ->placeholder('-')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('author.name')
+                Tables\Columns\TextColumn::make('user.name')
                     ->label('Oleh')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

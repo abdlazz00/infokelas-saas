@@ -13,12 +13,10 @@ class AnnouncementController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Announcement::with('author:id,name')
+        $query = Announcement::with('user:id,name')
             ->where('is_active', true)
             ->latest();
 
-        // Fitur Limit (Opsional)
-        // Jika frontend kirim ?limit=3, maka ambil 3 saja.
         if ($request->has('limit')) {
             $query->limit($request->query('limit'));
         }
@@ -30,7 +28,7 @@ class AnnouncementController extends Controller
                 'content' => $item->content,
                 'type' => $item->type,
                 'image_url' => $item->image ? asset('storage/' . $item->image) : null,
-                'author' => $item->author->name ?? 'Admin',
+                'author' => $item->user->name ?? 'Admin',
                 'created_at' => $item->created_at->diffForHumans(),
                 'date' => $item->created_at->format('d M Y'),
             ];
