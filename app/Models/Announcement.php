@@ -17,6 +17,7 @@ class Announcement extends Model
      */
     protected $fillable = [
         'user_id',
+        'classroom_id',
         'title',
         'content',
         'type',      // info, warning, danger

@@ -41,8 +41,8 @@ class SendWhatsappAssignment implements ShouldQueue
             . "*Judul:* {$record->title}\n\n"
             . "*Batas Waktu:*\n"
             . $record->deadline->format('d M Y') . " (Pukul " . $record->deadline->format('H:i') . " WIB)\n\n"
-            . "*Deskripsi Singkat:*\n"
-            . Str::limit(strip_tags($record->description), 150) . "\n\n"
+            . "*Deskripsi:*\n"
+            . strip_tags($record->description) . "\n\n"
             . "---------------------------\n"
             . "Silakan cek detail lengkap di aplikasi.";
 
