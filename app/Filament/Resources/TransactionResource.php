@@ -3,10 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
+use App\Models\BankAccount;
 use App\Models\Transaction;
 use App\Models\Classroom;
 use App\Services\TransactionService;
 use Filament\Forms;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -81,6 +83,37 @@ class TransactionResource extends Resource
                                         self::updateTotals($get, $set);
                                     }),
                             ])->columns(2),
+
+                        Forms\Components\Section::make('Tujuan Pembayaran')
+                            ->schema([
+                                Forms\Components\Select::make('bank_account_id')
+                                    ->label('Transfer Ke')
+                                    ->options(BankAccount::all()->mapWithKeys(function ($bank) {
+                                            return [$bank->id => "{$bank->bank_name} - {$bank->account_name}"];
+                                        }))
+                                    ->searchable()
+                                    ->preload()
+                                    ->live()
+                                        ->afterStateUpdated(function ($state, Set $set) {
+                                            $bank = BankAccount::find($state);
+                                            $set('nomor_rekening_display', $bank ? $bank->account_number : null);
+                                        }),
+
+                                Forms\Components\TextInput::make('nomor_rekening_display')
+                                    ->label('Nomor Rekening')
+                                    ->dehydrated(false)
+                                    ->readOnly()
+                                    ->suffixAction(
+                                        Action::make('copy')
+                                            ->icon('heroicon-m-clipboard-document-check')
+                                            ->tooltip('Salin Nomor Rekening')
+                                            ->action(function ($state, $livewire) {
+                                                $livewire->js("window.navigator.clipboard.writeText('{$state}')");
+                                                Notification::make()->title('Nomor rekening disalin!')->success()->send();
+                                            })
+                                    )
+                                    ->hint('Silakan transfer ke nomor rekening di atas.'),
+                            ]),
 
                         Forms\Components\Section::make('Rincian Pembayaran')
                             ->schema([

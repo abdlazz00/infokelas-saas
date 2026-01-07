@@ -34,15 +34,19 @@ class StudentsRelationManager extends RelationManager
                     ->required()
                     ->maxLength(255),
 
-                Forms\Components\TextInput::make('email')
-                    ->email()
-                    ->required()
-                    ->unique('users', 'email'),
-
                 Forms\Components\TextInput::make('nim')
                     ->label('NIM')
                     ->unique('users', 'nim')
                     ->required(),
+
+                Forms\Components\TextInput::make('phone')
+                    ->label('Nomor WhatsApp')
+                    ->tel(),
+
+                Forms\Components\TextInput::make('email')
+                    ->email()
+                    ->required()
+                    ->unique('users', 'email'),
 
                 Forms\Components\TextInput::make('password')
                     ->password()
@@ -76,6 +80,10 @@ class StudentsRelationManager extends RelationManager
 
                 Tables\Columns\TextColumn::make('email')
                     ->icon('heroicon-m-envelope')
+                    ->copyable(),
+
+                Tables\Columns\TextColumn::make('phone')
+                    ->icon('heroicon-m-phone')
                     ->copyable(),
 
                 Tables\Columns\ToggleColumn::make('is_active')

@@ -25,4 +25,9 @@ class Transaction extends Model
     {
         return $this->belongsTo(Classroom::class);
     }
+
+    public function bankAccount(): BelongsTo
+    {
+        return $this->belongsTo(BankAccount::class);
+    }
 }

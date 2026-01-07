@@ -20,21 +20,5 @@ class UserSeeder extends Seeder
             'password' => Hash::make('123'),
             'role' => 'super_admin',
         ]);
-
-        User::create([
-            'name' => 'Admin kelas',
-            'email' => 'adminkelas@admin.com',
-            'password' => Hash::make('123'),
-            'role' => 'admin_kelas',
-            'phone' => '08123456789',
-        ]);
-
-        User::create([
-            'name' => 'Andi',
-            'email' => 'andi@gmail.com',
-            'password' => Hash::make('123'),
-            'role' => 'mahasiswa',
-            'nim' => '10120202',
-        ]);
     }
 }
