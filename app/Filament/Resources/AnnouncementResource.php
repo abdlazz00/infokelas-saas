@@ -27,10 +27,8 @@ class AnnouncementResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->columns(3) // Setup Grid 3 Kolom
+            ->columns(3)
             ->schema([
-
-                // === KOLOM KIRI (CONTENT UTAMA) - Span 2 ===
                 Forms\Components\Group::make()
                     ->columnSpan(['lg' => 2])
                     ->schema([
@@ -50,7 +48,7 @@ class AnnouncementResource extends Resource
                                 Forms\Components\Textarea::make('content')
                                     ->label('Isi Pesan')
                                     ->placeholder('Tulis detail pengumuman di sini...')
-                                    ->rows(10) // Dibuat agak tinggi agar nyaman mengetik
+                                    ->rows(10)
                                     ->columnSpanFull(),
 
                                 Forms\Components\FileUpload::make('image')
@@ -68,7 +66,6 @@ class AnnouncementResource extends Resource
                         Forms\Components\Section::make('Target & Publikasi')
                             ->description('Atur tujuan dan status pengumuman.')
                             ->schema([
-                                // 1. PILIH KELAS (Trigger Validasi & Filter WA)
                                 Forms\Components\Select::make('classroom_id')
                                     ->label('Tujukan untuk Kelas')
                                     ->relationship(
@@ -83,11 +80,10 @@ class AnnouncementResource extends Resource
                                     ->required()
                                     ->live() // Update realtime
                                     ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                        $set('wa_group_id', null); // Reset WA saat kelas berubah
+                                        $set('wa_group_id', null);
 
                                         if (!$state) return;
 
-                                        // Logic Validasi Kelas Expired
                                         $classroom = \App\Models\Classroom::find($state);
                                         if ($classroom && $classroom->subscription_status !== 'active') {
                                             Notification::make()
@@ -108,7 +104,6 @@ class AnnouncementResource extends Resource
                                         },
                                     ]),
 
-                                // 2. PILIH GROUP WA (Otomatis sesuai kelas)
                                 Forms\Components\Select::make('wa_group_id')
                                     ->label('Broadcast WhatsApp')
                                     ->placeholder('Pilih Group WA')
@@ -116,18 +111,13 @@ class AnnouncementResource extends Resource
                                         $classroomId = $get('classroom_id');
                                         if (!$classroomId) return [];
 
-                                        $classroom = \App\Models\Classroom::find($classroomId);
-                                        if ($classroom) {
-                                            return \App\Models\WaGroup::where('user_id', $classroom->teacher_id)
-                                                ->pluck('name', 'jid');
-                                        }
-                                        return [];
+                                        return \App\Models\WaGroup::where('classroom_id', $classroomId)
+                                            ->pluck('name', 'id');
                                     })
                                     ->searchable()
                                     ->preload()
                                     ->helperText('Opsi muncul setelah kelas dipilih.'),
 
-                                // 3. TIPE PESAN
                                 Forms\Components\Select::make('type')
                                     ->label('Tipe Pesan')
                                     ->options([
@@ -145,7 +135,7 @@ class AnnouncementResource extends Resource
                                     ->default(true)
                                     ->onColor('success')
                                     ->offColor('danger')
-                                    ->inline(false), // Posisi toggle di bawah label
+                                    ->inline(false),
                             ]),
                     ]),
             ]);
@@ -175,13 +165,11 @@ class AnnouncementResource extends Resource
                         default => $state,
                     }),
 
-                Tables\Columns\TextColumn::make('wa_group_id')
-                    ->label('Group WA')
+                Tables\Columns\TextColumn::make('waGroup.name')
+                ->label('Group WA')
                     ->badge()
                     ->color('success')
-                    ->formatStateUsing(function ($state) {
-                        return WaGroup::where('jid', $state)->value('name') ?? '-';
-                    })
+                    ->placeholder('-')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('author.name')

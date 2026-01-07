@@ -21,16 +21,17 @@ class SendWhatsappMaterial implements ShouldQueue
 
     public function handle(FonnteService $fonnteService): void
     {
-        // Load Relasi
-        $this->material->loadMissing(['classroom', 'classroom.wa_group', 'subject']);
-        $record = $this->material;
-        $classroom = $record->classroom;
+        // 1. Load Relasi yang Benar
+        // Kita load 'waGroup' langsung dari material, bukan dari classroom
+        $this->material->loadMissing(['classroom', 'subject', 'waGroup']);
 
-        // Cek Target
-        $target = $classroom->wa_group?->jid;
+        $record = $this->material;
+
+        // 2. Cek Target JID dari relasi waGroup di material
+        $target = $record->waGroup?->jid;
 
         if (!$target) {
-            Log::info("Job Skipped: Kelas {$classroom->name} belum punya WA Group.");
+            Log::info("Job Skipped: Materi '{$record->title}' tidak di-set ke WA Group manapun.");
             return;
         }
 
@@ -44,8 +45,8 @@ class SendWhatsappMaterial implements ShouldQueue
             . "---------------------------\n"
             . "*Mata Kuliah:* {$record->subject->name}\n"
             . "*Judul Materi:* {$record->title}\n\n"
-            . "*Link Akses:*\n"
-            . "{$directLink}\n\n"
+            . "*Deskripsi Materi:*\n"
+            . "{$record->description}\n\n"
             . "---------------------------\n"
             . "Silakan login aplikasi untuk mengunduh file atau materi.";
 

@@ -145,12 +145,8 @@ class AssignmentResource extends Resource
                                         $classroomId = $get('classroom_id');
                                         if (!$classroomId) return [];
 
-                                        $classroom = Classroom::find($classroomId);
-                                        if ($classroom) {
-                                            return WaGroup::where('user_id', $classroom->teacher_id)
-                                                ->pluck('name', 'jid');
-                                        }
-                                        return [];
+                                        return WaGroup::where('classroom_id', $classroomId)
+                                            ->pluck('name', 'id');
                                     })
                                     ->searchable()
                                     ->preload()

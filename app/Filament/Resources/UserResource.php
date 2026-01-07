@@ -42,7 +42,6 @@ class UserResource extends Resource
                         ->unique(ignoreRecord: true)
                         ->maxLength(255),
 
-                    // Select Role
                     Forms\Components\Select::make('role')
                         ->options([
                             'super_admin' => 'Super Admin',
@@ -53,20 +52,16 @@ class UserResource extends Resource
                         ->default('mahasiswa')
                         ->live(),
 
-                    // Conditional Input: NIM (Hanya muncul jika role = mahasiswa)
                     Forms\Components\TextInput::make('nim')
                         ->label('NIM')
                         ->unique(ignoreRecord: true)
                         ->visible(fn (Forms\Get $get) => $get('role') === 'mahasiswa')
                         ->required(fn (Forms\Get $get) => $get('role') === 'mahasiswa'),
 
-                    // Conditional Input: Phone (Hanya muncul jika role = dosen)
                     Forms\Components\TextInput::make('phone')
                         ->label('Nomor WhatsApp')
-                        ->tel()
-                        ->visible(fn (Forms\Get $get) => $get('role') === 'admin_kelas'),
+                        ->tel(),
 
-                    // Password
                     Forms\Components\TextInput::make('password')
                         ->password()
                         ->dehydrateStateUsing(fn ($state) => Hash::make($state))
@@ -85,7 +80,8 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('email')->searchable(),
+                Tables\Columns\TextColumn::make('phone')->searchable()->copyable()->label('Nomor WhatsApp'),
+                Tables\Columns\TextColumn::make('email')->searchable()->copyable(),
                 Tables\Columns\TextColumn::make('role')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {

@@ -4,11 +4,7 @@ use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-// Import Controller Lama (Auth)
 use App\Http\Controllers\Api\AuthController;
-
-// Import Controller Baru (Hasil Refactor)
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ClassroomController;
 use App\Http\Controllers\Api\ScheduleController;

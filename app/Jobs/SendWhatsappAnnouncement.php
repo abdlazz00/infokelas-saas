@@ -22,15 +22,16 @@ class SendWhatsappAnnouncement implements ShouldQueue
     public function handle(FonnteService $fonnteService): void
     {
         // 1. Load Relasi
-        $this->announcement->loadMissing(['classroom', 'classroom.wa_group', 'author']);
+        $this->announcement->loadMissing(['classroom', 'waGroup', 'author']);
+
         $record = $this->announcement;
         $classroom = $record->classroom;
 
-        // 2. Cek Target (Group WA)
-        $target = $classroom->wa_group?->jid;
+        // 2. Cek Target (Langsung dari relasi waGroup di announcement)
+        $target = $record->waGroup?->jid;
 
         if (!$target) {
-            Log::info("Job Skipped: Kelas {$classroom->name} belum punya WA Group.");
+            Log::info("Job Skipped: Pengumuman di kelas {$classroom->name} tidak ada target WA.");
             return;
         }
 

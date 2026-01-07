@@ -41,4 +41,9 @@ class Announcement extends Model
     {
         return $this->belongsTo(Classroom::class);
     }
+
+    public function waGroup(): BelongsTo
+    {
+        return $this->belongsTo(WaGroup::class, 'wa_group_id');
+    }
 }
