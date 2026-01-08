@@ -4,46 +4,36 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
     /**
-     * Get User Profile & Academic Data
+     * GET /profile
+     * Return FULL profile
      */
     public function index(Request $request)
     {
         $user = $request->user();
 
-        // Ambil kelas terakhir berdasarkan tanggal join
-        // Menggunakan orderByPivot aman karena kita sudah fix logic joinClass
-        $latestClass = $user->classrooms()->orderByPivot('joined_at', 'desc')->first();
-
         return response()->json([
             'status' => 'success',
-            'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'nim' => $user->nim ?? '-',
-                'university' => $latestClass->university ?? '-',
-                'major' => $latestClass->major ?? '-',
-                'semester' => $latestClass->semester ?? '-',
-                'avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null,
-            ]
+            'data' => $this->profileResponse($user)
         ]);
     }
 
     /**
-     * Update Profile Data
+     * POST /profile/update
+     * Update profile & return FULL profile
      */
     public function update(Request $request)
     {
         $user = $request->user();
 
         $request->validate([
-            'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|unique:users,email,' . $user->id,
-            'avatar' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
+            'name'   => 'nullable|string|max:255',
+            'email'  => 'nullable|email|max:255',
+            'avatar' => 'nullable|image|max:2048',
         ]);
 
         if ($request->filled('name')) {
@@ -55,7 +45,10 @@ class ProfileController extends Controller
         }
 
         if ($request->hasFile('avatar')) {
-            // Hapus avatar lama jika perlu (opsional), lalu simpan yang baru
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
             $path = $request->file('avatar')->store('avatars', 'public');
             $user->avatar = $path;
         }
@@ -65,11 +58,24 @@ class ProfileController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Profil berhasil diperbarui.',
-            'data' => [
-                'name' => $user->name,
-                'email' => $user->email,
-                'avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null,
-            ]
+            'data' => $this->profileResponse($user)
         ]);
+    }
+
+    /**
+     * Helper: FULL profile response
+     */
+    private function profileResponse($user)
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar_url' => $user->avatar ? asset('storage/' . $user->avatar) : null,
+            'university' => $user->university,
+            'major' => $user->major,
+            'nim' => $user->nim,
+            'semester' => $user->semester,
+        ];
     }
 }
