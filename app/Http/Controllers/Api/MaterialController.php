@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Classroom;
 use App\Models\Material;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MaterialController extends Controller
 {
@@ -78,6 +79,29 @@ class MaterialController extends Controller
 
         return response()->json(['status' => 'success', 'data' => $materials]);
     }
+
+    public function download($id)
+    {
+        $material = Material::find($id);
+
+        if (!$material) {
+            return response()->json([
+                'message' => 'Materi tidak ditemukan'
+            ], 404);
+        }
+
+        if (!$material->file_path) {
+            return response()->json([
+                'message' => 'File materi tidak tersedia'
+            ], 404);
+        }
+
+        $extension = pathinfo($material->file_path, PATHINFO_EXTENSION);
+        $downloadName = preg_replace('/[^a-zA-Z0-9\s]/', '', $material->title) . '.' . $extension;
+
+        return Storage::disk('public')->download($material->file_path, $downloadName);
+    }
+
     public function show($id)
     {
         // Cari materi berdasarkan ID

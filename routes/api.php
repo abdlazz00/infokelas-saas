@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/materials', [MaterialController::class, 'index']);
     Route::get('/materials/{id}', [MaterialController::class, 'show']); // Support route lama
     Route::get('/classrooms/{id}/materials', [MaterialController::class, 'byClassroom']); // Materi per Kelas
+    Route::get('/materials/{id}/download', [MaterialController::class, 'download']);
 
     // 6. ASSIGNMENTS (TUGAS)
     // Get tugas by subject_id
