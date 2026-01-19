@@ -12,7 +12,6 @@ class AssignmentController extends Controller
 {
     /**
      * Get Assignments by Subject ID
-     * Pengganti: getAssignments($subjectId)
      */
     public function index(Request $request)
     {
@@ -42,7 +41,6 @@ class AssignmentController extends Controller
 
     /**
      * Get Assignments by Classroom ID
-     * Pengganti: assignmentsByClassroom($id)
      */
     public function byClassroom($id)
     {
@@ -81,7 +79,6 @@ class AssignmentController extends Controller
 
     /**
      * Detail Tugas
-     * Pengganti: detailAssignment($id)
      */
     public function show($id)
     {

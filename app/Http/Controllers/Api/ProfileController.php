@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Laravel\Facades\Image;
 
 class ProfileController extends Controller
 {
@@ -33,7 +35,7 @@ class ProfileController extends Controller
         $request->validate([
             'name'   => 'nullable|string|max:255',
             'email'  => 'nullable|email|max:255',
-            'avatar' => 'nullable|image|max:2048',
+            'avatar' => 'nullable|image|max:10240',
         ]);
 
         if ($request->filled('name')) {
@@ -49,7 +51,15 @@ class ProfileController extends Controller
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            $path = $request->file('avatar')->store('avatars', 'public');
+            $file = $request->file('avatar');
+            $filename = Str::random(40) . '.webp';
+            $path = 'avatars/' . $filename;
+
+            $encodedImage = Image::read($file)
+                ->scale(width: 500)
+                ->toWebp(80);
+
+            Storage::disk('public')->put($path, $encodedImage);
             $user->avatar = $path;
         }
 

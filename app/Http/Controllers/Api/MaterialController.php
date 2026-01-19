@@ -16,10 +16,6 @@ class MaterialController extends Controller
      */
     public function index(Request $request)
     {
-        // Kita gunakan query parameter ?subject_id=... agar lebih RESTful
-        // Tapi jika ingin support route lama /materials/{id}, kita sesuaikan di routes.
-        // Di sini saya buat flexible menerima parameter langsung.
-
         $subjectId = $request->query('subject_id') ?? $request->route('id');
 
         if (!$subjectId) {
@@ -45,10 +41,6 @@ class MaterialController extends Controller
         return response()->json(['status' => 'success', 'data' => $materials]);
     }
 
-    /**
-     * Get Materials by Classroom ID
-     * Pengganti: materialsByClassroom($id)
-     */
     public function byClassroom($id)
     {
         $classroom = Classroom::find($id);

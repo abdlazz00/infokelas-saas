@@ -19,27 +19,22 @@ class ScheduleController extends Controller
 
         $classroomIds = $user->classrooms()->pluck('classrooms.id');
 
-        // 1. Base Query
         $query = Schedule::query()
             ->whereIn('classroom_id', $classroomIds)
             ->whereHas('subject', fn($q) => $q->where('is_active', true))
             ->with(['subject', 'classroom', 'subject.classroom.teacher:id,name']);
 
-        // 2. FILTER KHUSUS: HANYA HARI INI
-        // Jika request membawa parameter ?today=true
         if ($request->has('today')) {
             // dayOfWeekIso: 1 (Senin) s/d 7 (Minggu)
             $today = Carbon::now()->dayOfWeekIso;
             $query->where('day_of_week', $today);
         }
 
-        // 3. Eksekusi Query
         $schedules = $query
             ->orderBy('day_of_week', 'asc')
             ->orderBy('start_time', 'asc')
             ->get();
 
-        // 4. Formatting Data
         $formattedSchedules = $schedules->map(function ($schedule) {
             $days = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
             return [

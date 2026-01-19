@@ -20,7 +20,6 @@ class ClassroomController extends Controller
 
     /**
      * List Kelas Saya
-     * (Tetap pakai Eloquent biasa karena simple read operation)
      */
     public function index(Request $request)
     {
@@ -28,7 +27,7 @@ class ClassroomController extends Controller
 
         // Ambil kelas yang diikuti user (Pivot)
         $classrooms = $user->classrooms()
-            ->with('teacher:id,name') // Eager load dosen
+            ->with('teacher:id,name')
             ->orderByPivot('joined_at', 'desc')
             ->get();
 

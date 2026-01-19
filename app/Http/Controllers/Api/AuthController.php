@@ -22,14 +22,13 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            // Kita ubah validasi agar tidak wajib format email, karena bisa jadi NIM
             'identifier' => 'required|string',
             'password' => 'required',
         ]);
 
         try {
             $result = $this->authService->login(
-                $request->identifier, // Kirim input identifier (bisa email/nim)
+                $request->identifier,
                 $request->password,
                 'mahasiswa'
             );
@@ -51,7 +50,6 @@ class AuthController extends Controller
         }
     }
 
-    // ... method logout dan me tetap sama ...
     public function logout(Request $request)
     {
         try {

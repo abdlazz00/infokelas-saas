@@ -25,7 +25,6 @@ class ForgotPasswordController extends Controller
     {
         $request->validate(['identifier' => 'required|string']);
 
-        // Cari User
         $user = User::where('email', $request->identifier)
             ->orWhere('nim', $request->identifier)
             ->first();
@@ -35,7 +34,6 @@ class ForgotPasswordController extends Controller
         }
 
         try {
-            // Panggil Service untuk logic generate & kirim
             $this->otpService->sendOtp($user, $request->identifier);
 
             return response()->json([
