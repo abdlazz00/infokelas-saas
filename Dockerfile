@@ -55,7 +55,7 @@ COPY --chown=www-data:www-data --from=composer_build /app/vendor vendor
 RUN chmod -R 775 storage bootstrap/cache
 
 # Expose port
-EXPOSE 80
+EXPOSE 8080
 
 # Entrypoint
 ENTRYPOINT ["start-container"]
