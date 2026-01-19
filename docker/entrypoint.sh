@@ -1,9 +1,11 @@
 #!/bin/bash
+
+# Hentikan script jika ada error (kecuali saat menunggu DB)
 set -e
 
 echo "🛠️  Running post-deploy setup..."
 
-# 1. Buat folder log & cache manual (mencegah error 500 karena folder log tidak ada)
+# 1. Pastikan folder storage & cache ada
 mkdir -p storage/logs
 mkdir -p storage/app/public
 mkdir -p storage/framework/views
@@ -11,19 +13,26 @@ mkdir -p storage/framework/cache
 mkdir -p storage/framework/sessions
 mkdir -p bootstrap/cache
 
-# 2. Paksa permission folder agar bisa ditulis oleh Nginx/PHP
+# 2. Fix Permission (Wajib agar tidak Error 500)
 chmod -R 777 storage bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 
-# 3. Jalankan command Laravel
+# 3. AUTOMATIC MIGRATION (Ini yang kamu minta)
+# Kita gunakan --force agar tidak tanya "Yes/No" di production
+echo "📦 Migrating database..."
+php artisan migrate --force
+
+# 4. Jalankan Setup Laravel Lainnya
 php artisan package:discover --ansi
 php artisan filament:upgrade
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+php artisan event:cache
 
-# 4. Storage Link
+# 5. Link Storage
 if [ ! -L public/storage ]; then
+    echo "🔗 Linking storage..."
     php artisan storage:link
 fi
 
