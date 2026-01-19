@@ -5,50 +5,54 @@ COPY package*.json vite.config.js ./
 RUN npm install
 COPY resources ./resources
 COPY public ./public
-# Build assets ke folder public/build
 RUN npm run build
 
 # Stage 2: Build Backend (Composer)
 FROM composer:2 as composer_build
 WORKDIR /app
 COPY composer.json composer.lock ./
-# Install dependencies tanpa dev dependencies untuk production
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
 
 # Stage 3: Production Image
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies & PHP extensions yang dibutuhkan Laravel & Filament
-# libpng, libjpeg, freetype, libzip, icu-dev (untuk intl) sangat penting untuk Filament/Intervention Image
-RUN apk add --no-cache \
+# Setup working directory
+WORKDIR /var/www/html
+
+# 1. Update repository dan install dependencies sistem dasar
+# Kita pisahkan ini agar cache layer docker bekerja lebih baik dan error lebih jelas
+RUN apk update && apk add --no-cache \
     nginx \
     supervisor \
     curl \
+    bash \
+    zip \
+    unzip
+
+# 2. Install library development untuk compile ekstensi PHP
+# linux-headers seringkali dibutuhkan untuk menghindari exit code error saat compile
+RUN apk add --no-cache \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
     libzip-dev \
     icu-dev \
     oniguruma-dev \
-    bash \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd intl zip opcache
+    linux-headers
 
-# Setup working directory
-WORKDIR /var/www/html
+# 3. Configure & Install PHP Extensions
+# Kita pisahkan configure dan install untuk memastikan step ini aman
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) pdo_mysql mbstring exif pcntl bcmath gd intl zip opcache
 
-# Copy konfigurasi custom (kita akan buat file ini di langkah selanjutnya)
+# Copy konfigurasi custom
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/start-container
 
-# Copy file project
+# Copy source code dan hasil build
 COPY . .
-
-# Copy assets dari stage frontend
 COPY --from=frontend /app/public/build public/build
-
-# Copy vendor dari stage composer
 COPY --from=composer_build /app/vendor vendor
 
 # Setup permissions
@@ -57,6 +61,8 @@ RUN chmod +x /usr/local/bin/start-container \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
+# Expose port
 EXPOSE 80
 
+# Entrypoint
 ENTRYPOINT ["start-container"]
