@@ -11,7 +11,8 @@ RUN npm run build
 FROM composer:2 as composer_build
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
+# PERBAIKAN: Ditambahkan --no-scripts agar tidak error saat menjalankan artisan command
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs --no-scripts
 
 # Stage 3: Production Image
 FROM php:8.2-fpm-alpine
@@ -20,7 +21,6 @@ FROM php:8.2-fpm-alpine
 WORKDIR /var/www/html
 
 # 1. Update repository dan install dependencies sistem dasar
-# Kita pisahkan ini agar cache layer docker bekerja lebih baik dan error lebih jelas
 RUN apk update && apk add --no-cache \
     nginx \
     supervisor \
@@ -30,7 +30,6 @@ RUN apk update && apk add --no-cache \
     unzip
 
 # 2. Install library development untuk compile ekstensi PHP
-# linux-headers seringkali dibutuhkan untuk menghindari exit code error saat compile
 RUN apk add --no-cache \
     libpng-dev \
     libjpeg-turbo-dev \
@@ -41,7 +40,6 @@ RUN apk add --no-cache \
     linux-headers
 
 # 3. Configure & Install PHP Extensions
-# Kita pisahkan configure dan install untuk memastikan step ini aman
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) pdo_mysql mbstring exif pcntl bcmath gd intl zip opcache
 
