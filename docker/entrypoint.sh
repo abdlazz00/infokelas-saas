@@ -1,26 +1,35 @@
 #!/bin/bash
 
-# Pastikan script berhenti jika ada error
+# Hentikan script jika ada error
 set -e
 
-# Caching config untuk performa production
-echo "Caching configuration..."
+echo "🛠️  Running post-deploy setup..."
+
+# 1. Jalankan Package Discovery (PENTING: karena kita skip di build tadi)
+php artisan package:discover --ansi
+
+# 2. Jalankan Filament Upgrade (untuk publish assets filament)
+php artisan filament:upgrade
+
+# 3. Caching Configuration
+echo "🔥 Caching configuration..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan event:cache
 
-# Jalankan storage link jika belum ada
+# 4. Link Storage
 if [ ! -L public/storage ]; then
-    echo "Linking storage..."
+    echo "🔗 Linking storage..."
     php artisan storage:link
 fi
 
-# Opsional: Jalankan migrasi database otomatis (Hati-hati di production!)
-# Uncomment baris di bawah jika ingin migrasi jalan otomatis setiap deploy
-# echo "Running migrations..."
-# php artisan migrate --force
+# 5. FIX PERMISSION (PENTING!)
+# Karena perintah di atas dijalankan sebagai root, file cache jadi milik root.
+# Kita harus kembalikan kepemilikannya ke www-data agar Nginx tidak Error 500.
+echo "👮 Fixing permissions..."
+chown -R www-data:www-data /var/www/html/storage
+chown -R www-data:www-data /var/www/html/bootstrap/cache
 
-# Jalankan Supervisor
-echo "Starting Supervisor..."
+echo "🚀 Starting Supervisor..."
 exec /usr/bin/supervisord -c /etc/supervisord.conf
