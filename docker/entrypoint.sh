@@ -1,11 +1,9 @@
 #!/bin/bash
-
 set -e
 
 echo "🛠️  Running post-deploy setup..."
 
-# 1. Pastikan folder storage ADA sebelum di-setting permission
-# Ini wajib karena seringkali folder kosong tidak ter-upload ke git
+# 1. Buat folder log & cache manual (mencegah error 500 karena folder log tidak ada)
 mkdir -p storage/logs
 mkdir -p storage/app/public
 mkdir -p storage/framework/views
@@ -13,27 +11,19 @@ mkdir -p storage/framework/cache
 mkdir -p storage/framework/sessions
 mkdir -p bootstrap/cache
 
-# 2. Fix Permission (Lakukan DULUAN sebelum artisan command)
-# Kita buka akses lebar dulu (777) ke folder storage untuk memastikan tidak ada permission denied
+# 2. Paksa permission folder agar bisa ditulis oleh Nginx/PHP
 chmod -R 777 storage bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 
-echo "📂 Permissions fixed."
-
-# 3. Jalankan Package Discovery & Upgrade
+# 3. Jalankan command Laravel
 php artisan package:discover --ansi
 php artisan filament:upgrade
-
-# 4. Caching Configuration
-echo "🔥 Caching configuration..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-php artisan event:cache
 
-# 5. Link Storage
+# 4. Storage Link
 if [ ! -L public/storage ]; then
-    echo "🔗 Linking storage..."
     php artisan storage:link
 fi
 
