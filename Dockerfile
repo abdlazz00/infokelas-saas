@@ -39,6 +39,11 @@ RUN apk update && apk add --no-cache \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) pdo_mysql mbstring exif pcntl bcmath gd intl zip opcache
 
+# --- BAGIAN INI WAJIB DITAMBAHKAN UNTUK MEMPERBAIKI LIMIT PHP ---
+RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/custom-upload.ini \
+    && echo "post_max_size = 100M" >> /usr/local/etc/php/conf.d/custom-upload.ini \
+    && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/custom-memory.ini
+
 # 3. Copy Config (Langsung set permission executable untuk entrypoint)
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
