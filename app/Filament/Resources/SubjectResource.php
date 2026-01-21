@@ -91,6 +91,12 @@ class SubjectResource extends Resource
                         ->label('Nama Mata Kuliah')
                         ->required(),
 
+                    Forms\Components\TextInput::make('sks')
+                        ->label('SKS')
+                        ->numeric()
+                        ->default(2)
+                        ->required(),
+
                     Forms\Components\TextInput::make('semester')
                         ->label('Semester')
                         ->numeric()
@@ -130,7 +136,12 @@ class SubjectResource extends Resource
                     ->label('Mata Kuliah')
                     ->searchable()
                     ->weight('bold')
-                    ->description(fn ($record) => $record->lecturer), // Nama dosen jadi deskripsi kecil di bawah nama matkul
+                    ->description(fn ($record) => $record->lecturer),
+
+                Tables\Columns\TextColumn::make('sks')
+                    ->label('SKS')
+                    ->alignCenter()
+                    ->sortable(),
 
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Aktif'),
