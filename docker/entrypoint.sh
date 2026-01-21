@@ -17,12 +17,14 @@ mkdir -p bootstrap/cache
 chmod -R 777 storage bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 
-# 3. AUTOMATIC MIGRATION (Ini yang kamu minta)
-# Kita gunakan --force agar tidak tanya "Yes/No" di production
+# 3. AUTOMATIC MIGRATION
 echo "📦 Migrating database..."
 php artisan migrate --force
 
-# 4. Jalankan Setup Laravel Lainnya
+echo "🌱 Seeding database..."
+php artisan db:seed --force
+
+# 5. Jalankan Setup Laravel Lainnya
 php artisan package:discover --ansi
 php artisan filament:upgrade
 php artisan config:cache
@@ -30,7 +32,7 @@ php artisan route:cache
 php artisan view:cache
 php artisan event:cache
 
-# 5. Link Storage
+# 6. Link Storage
 if [ ! -L public/storage ]; then
     echo "🔗 Linking storage..."
     php artisan storage:link
