@@ -42,7 +42,8 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 # --- BAGIAN INI WAJIB DITAMBAHKAN UNTUK MEMPERBAIKI LIMIT PHP ---
 RUN echo "upload_max_filesize = 100M" > /usr/local/etc/php/conf.d/custom-upload.ini \
     && echo "post_max_size = 100M" >> /usr/local/etc/php/conf.d/custom-upload.ini \
-    && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/custom-memory.ini
+    && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/custom-memory.ini \
+    && echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/custom-time.ini
 
 # 3. Copy Config (Langsung set permission executable untuk entrypoint)
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
